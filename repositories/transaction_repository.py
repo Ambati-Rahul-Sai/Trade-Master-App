@@ -1,7 +1,9 @@
+from datetime import datetime
+
 import psycopg2
 from psycopg2 import sql
 
-from domain_classes.transaction import Transaction
+from domain_classes.transaction import Transaction, BuyTransaction, SellTransaction
 
 
 class TransactionRepository:
@@ -21,11 +23,23 @@ class TransactionRepository:
         self.connection.commit()
 
     def get_transactions_by_username(self, user):
-        query = sql.SQL("SELECT username, stock_symbol, quantity, date, transaction_type FROM transactions WHERE "
-                        "username = %s")
+        query = sql.SQL("SELECT stock_symbol, quantity, date, transaction_type FROM transactions WHERE username = %s")
         self.cursor.execute(query, (user.username,))
         transactions = self.cursor.fetchall()
-        return [Transaction(*transaction) for transaction in transactions]
+        result = []
+        for transaction in transactions:
+            stock_symbol, quantity, date, transaction_type = transaction
+            if isinstance(date, datetime):
+                date = date
+            else:
+                # If 'date' is a string, parse it
+                date = datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
+            if transaction_type == "Buy":
+                result.append(BuyTransaction(user.username, stock_symbol, quantity, date, transaction_type))
+            else:
+                result.append(SellTransaction(user.username, stock_symbol, quantity, date, transaction_type))
+
+        return result
 
     def total_stocks(self, username, stock_symbol, transaction_type):
         query = sql.SQL("SELECT SUM(quantity) FROM transactions WHERE username = %s AND transaction_type = %s AND "

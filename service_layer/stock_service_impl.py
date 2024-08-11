@@ -1,3 +1,4 @@
+from datetime import datetime
 from threading import Lock
 
 from data_layer import DataStore
@@ -27,7 +28,8 @@ class StockServiceImpl(StockService):
             if stock:
                 available_quantity = stock.quantity
                 if quantity <= available_quantity:
-                    self.data_store.add_buy_transaction(BuyTransaction(username, stock_symbol, quantity, transaction_type))
+                    transaction_date = datetime.now()
+                    self.data_store.add_buy_transaction(BuyTransaction(username, stock_symbol, quantity, transaction_date, transaction_type))
                     new_quantity = available_quantity - quantity
                     self.data_store.update_stock(Stock(stock_symbol, quantity=new_quantity))
                     print(f"Bought {quantity} share(s) of {stock_symbol} for {username}")
@@ -44,7 +46,8 @@ class StockServiceImpl(StockService):
                 sold = self.data_store.total_stocks_sold(username, stock_symbol, "Sell")
                 available_quantity = bought - sold
                 if quantity <= available_quantity:
-                    self.data_store.add_sell_transaction(SellTransaction(username, stock_symbol, quantity, transaction_type))
+                    transaction_date = datetime.now()
+                    self.data_store.add_sell_transaction(SellTransaction(username, stock_symbol, quantity, transaction_date, transaction_type))
                     new_quantity = available_quantity + quantity
                     self.data_store.update_stock(Stock(stock_symbol, quantity=new_quantity))
                     print(f"Sold {quantity} share(s) of {stock_symbol} for {username}")

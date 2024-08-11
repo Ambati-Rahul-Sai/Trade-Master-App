@@ -6,7 +6,7 @@ class Transaction:
         self.username = username
         self.stock_symbol = stock_symbol
         self.quantity = quantity
-        self.date = datetime.strptime(date, '%Y-%m-%d %H:%M:%S.%f') if isinstance(date, str) else date
+        self.date = datetime.strptime(date, '%Y-%m-%d %H:%M:%S') if isinstance(date, str) else date
         self.transaction_type = transaction_type
 
     # def __str__(self):
