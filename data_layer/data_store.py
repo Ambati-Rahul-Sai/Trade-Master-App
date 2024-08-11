@@ -1,4 +1,4 @@
-from domain_classes import Stock
+from repositories import UserRepository, StockRepository, TransactionRepository, StockPriceHistoryRepository
 
 
 class DataStore:
@@ -7,50 +7,58 @@ class DataStore:
     @staticmethod
     def get_instance():
         if DataStore.instance is None:
-            DataStore()
+            DataStore.instance = DataStore()
         return DataStore.instance
 
     def __init__(self):
         if DataStore.instance is not None:
-            raise Exception("An instance of DataStore already exists!")
-        else:
-            DataStore.instance = self
-            self.users = {}
-            self.stocks = {
-                "SBI": Stock("SBI", 847.85),
-                "ITC": Stock("ITC", 489.10),
-                "TCS": Stock("TCS", 4283.05),
-                "HDFC": Stock("HDFC", 1659.15)
-            }
-            self.transactions = {}
+            raise Exception("This class is a singleton!")
+        self.user_repository = UserRepository()
+        self.stock_repository = StockRepository()
+        self.transaction_repository = TransactionRepository()
+        self.stock_price_history_repository = StockPriceHistoryRepository()
 
     def add_user(self, user):
-        self.users[user.username] = user
+        self.user_repository.create_user(user)
 
-    def get_user(self, username):
-        return self.users.get(username)
+    def get_user(self, user):
+        return self.user_repository.get_user(user)
 
-    def get_stock(self, stock_symbol):
-        return self.stocks.get(stock_symbol)
+    def update_user(self, user):
+        self.user_repository.update_user(user)
+
+    def delete_user(self, user):
+        self.user_repository.delete_user(user)
+
+    def add_stock(self, stock):
+        self.stock_repository.create_stock(stock)
+
+    def get_stock(self, stock):
+        return self.stock_repository.get_stock(stock)
 
     def get_stocks(self):
-        return list(self.stocks.values())
+        return self.stock_repository.get_stocks()
 
-    def add_buy_transaction(self, transaction_info, stock_info):
-        stock_symbol, quantity = stock_info
-        if transaction_info.username not in self.transactions:
-            self.transactions[transaction_info.username] = {}
-            self.transactions[transaction_info.username]["orders"] = []
-            self.transactions[transaction_info.username]["stocks"] = {}
-        if stock_symbol not in self.transactions[transaction_info.username]["stocks"]:
-            self.transactions[transaction_info.username]["stocks"][stock_symbol] = 0
-        self.transactions[transaction_info.username]["stocks"][stock_symbol] += quantity
-        self.transactions[transaction_info.username]["orders"].append(transaction_info)
+    def update_stock(self, stock):
+        self.stock_repository.update_stock(stock)
 
-    def add_sell_transaction(self, transaction_info, stock_info):
-        stock_symbol, quantity = stock_info
-        self.transactions[transaction_info.username]["stocks"][stock_symbol] -= quantity
-        self.transactions[transaction_info.username]["orders"].append(transaction_info)
+    def delete_stock(self, stock):
+        self.stock_repository.delete_stock(stock)
+
+    def total_stocks_bought(self, username, stock_symbol, transaction_type):
+        return self.transaction_repository.total_stocks(username, stock_symbol, transaction_type)
+
+    def total_stocks_sold(self, username, stock_symbol, transaction_type):
+        return self.transaction_repository.total_stocks(username, stock_symbol, transaction_type)
+
+    def calculate_average(self, stock_symbol, from_year, to_year):
+        return self.stock_price_history_repository.get_average_stock_value(stock_symbol, from_year, to_year)
+
+    def add_buy_transaction(self, transaction):
+        self.transaction_repository.create_transaction(transaction)
+
+    def add_sell_transaction(self, transaction):
+        self.transaction_repository.create_transaction(transaction)
 
     def get_transactions(self, username):
-        return self.transactions.get(username, {})
+        return self.transaction_repository.get_transactions_by_username(username)

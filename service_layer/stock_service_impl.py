@@ -1,7 +1,7 @@
 from threading import Lock
 
 from data_layer import DataStore
-from domain_classes import BuyTransaction, SellTransaction
+from domain_classes import BuyTransaction, SellTransaction, Stock
 from service_layer.stock_service import StockService
 
 
@@ -10,26 +10,46 @@ class StockServiceImpl(StockService):
         self.data_store = DataStore.get_instance()
         self.lock = Lock()
 
-    def buy_stock(self, username, stock_symbol, quantity):
-        with self.lock:
-            transaction_info = BuyTransaction(username, stock_symbol, quantity)
-            stock_info = [stock_symbol, quantity]
-            self.data_store.add_buy_transaction(transaction_info, stock_info)
-            print(f"Bought {quantity} share(s) of {stock_symbol} for {username}")
-
-    def sell_stock(self, username, stock_symbol, quantity):
-        with self.lock:
-            user_transactions = self.data_store.get_transactions(username)
-            if stock_symbol not in user_transactions["stocks"]:
-                print(f"Transaction Failed: You haven't bought the stock-{stock_symbol} yet, so you can't sell it.")
-            elif quantity > user_transactions["stocks"][stock_symbol]:
-                print(f"Invalid quantity! You can't sell more shares than you have purchased.\n"
-                      f"You have bought only {user_transactions["stocks"][stock_symbol]} shares of {stock_symbol}")
-            else:
-                transaction_info = SellTransaction(username, stock_symbol, quantity)
-                stock_info = [stock_symbol, quantity]
-                self.data_store.add_sell_transaction(transaction_info, stock_info)
-                print(f"Sold {quantity} share(s) of {stock_symbol} for {username}")
-
     def get_available_stocks(self):
         return self.data_store.get_stocks()
+
+    def calculate_average_stock_value(self, stock_symbol, from_year, to_year):
+        stock = self.data_store.get_stock(Stock(stock_symbol))
+        if stock:
+            average = self.data_store.calculate_average(stock_symbol, from_year, to_year)
+            return average
+        else:
+            print("Invalid stock symbol! Please try again.")
+
+    def buy_stock(self, username, stock_symbol, quantity, transaction_type):
+        with self.lock:
+            stock = self.data_store.get_stock(Stock(stock_symbol))
+            if stock:
+                available_quantity = stock.quantity
+                if quantity <= available_quantity:
+                    self.data_store.add_buy_transaction(BuyTransaction(username, stock_symbol, quantity, transaction_type))
+                    new_quantity = available_quantity - quantity
+                    self.data_store.update_stock(Stock(stock_symbol, quantity=new_quantity))
+                    print(f"Bought {quantity} share(s) of {stock_symbol} for {username}")
+                else:
+                    print(f"Invalid Quantity! There are currently {available_quantity} share(s) of {stock_symbol}")
+            else:
+                print("Invalid stock symbol! Please try again.")
+
+    def sell_stock(self, username, stock_symbol, quantity, transaction_type):
+        with self.lock:
+            stock = self.data_store.get_stock(Stock(stock_symbol))
+            if stock:
+                bought = self.data_store.total_stocks_bought(username, stock_symbol, "Buy")
+                sold = self.data_store.total_stocks_sold(username, stock_symbol, "Sell")
+                available_quantity = bought - sold
+                if quantity <= available_quantity:
+                    self.data_store.add_sell_transaction(SellTransaction(username, stock_symbol, quantity, transaction_type))
+                    new_quantity = available_quantity + quantity
+                    self.data_store.update_stock(Stock(stock_symbol, quantity=new_quantity))
+                    print(f"Sold {quantity} share(s) of {stock_symbol} for {username}")
+                else:
+                    print(f"Invalid Quantity! You have currently {available_quantity} share(s) of {stock_symbol}")
+            else:
+                print("Invalid stock symbol! Please try again.")
+
