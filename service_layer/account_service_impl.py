@@ -30,6 +30,7 @@ class AccountServiceImpl(AccountService):
     def delete_account(self, username):
         username = username.strip()
         self.data_store.delete_user(User(username))
+        self.data_store.delete_transactions(User(username))
         print(f"Successfully deleted account for {username}")
 
     def get_transaction_history(self, username):

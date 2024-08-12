@@ -21,16 +21,16 @@ class TestTradeMaster(unittest.TestCase):
         self.assertEqual(user.username, self.username)
 
     def test_buy_stock(self):
-        self.stock_service.buy_stock(self.username, "AMZN", 10, "Buy")
+        self.stock_service.buy_stock(self.username, "AMZN", 10, "BUY")
         transactions = self.account_service.get_transaction_history(self.username)
         self.assertEqual(len(transactions), 1)
         self.assertIsInstance(transactions[0], BuyTransaction)
-    #
+
     def test_concurrent_buy_sell_stock(self):
         self.account_service.create_account(self.username, self.password, self.email)
         threads = [
-            Thread(target=self.stock_service.buy_stock, args=(self.username, "AMZN", 10, "Buy")),
-            Thread(target=self.stock_service.sell_stock, args=(self.username, "AMZN", 5, "Sell"))
+            Thread(target=self.stock_service.buy_stock, args=(self.username, "AMZN", 10, "BUY")),
+            Thread(target=self.stock_service.sell_stock, args=(self.username, "AMZN", 5, "SELL"))
         ]
         for thread in threads:
             thread.start()

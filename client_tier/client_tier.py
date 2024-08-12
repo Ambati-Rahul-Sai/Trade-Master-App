@@ -61,7 +61,7 @@ class TradeMasterApp:
 
                 stock_symbol = input("Enter stock symbol: ")
                 quantity = int(input("Enter quantity: "))
-                transaction_type = "Buy"
+                transaction_type = "BUY"
                 self.stock_service.buy_stock(username, stock_symbol, quantity, transaction_type)
 
             elif option == 3:
@@ -69,7 +69,7 @@ class TradeMasterApp:
 
                 stock_symbol = input("Enter stock symbol: ")
                 quantity = int(input("Enter quantity: "))
-                transaction_type = "Sell"
+                transaction_type = "SELL"
                 self.stock_service.sell_stock(username, stock_symbol, quantity, transaction_type)
 
             elif option == 4:
@@ -87,7 +87,7 @@ class TradeMasterApp:
                 if transactions:
                     print("Your Transactions:\n")
                     for transaction in transactions:
-                        t_type = "Bought" if transaction.transaction_type == "Buy" else "Sold"
+                        t_type = "Bought" if transaction.transaction_type == "BUY" else "Sold"
                         print(
                             f"\t{t_type} {transaction.quantity} share(s) of {transaction.stock_symbol} on {transaction.date}")
                 else:

@@ -42,8 +42,8 @@ class StockServiceImpl(StockService):
         with self.lock:
             stock = self.data_store.get_stock(Stock(stock_symbol))
             if stock:
-                bought = self.data_store.total_stocks_bought(username, stock_symbol, "Buy")
-                sold = self.data_store.total_stocks_sold(username, stock_symbol, "Sell")
+                bought = self.data_store.total_stocks_bought(username, stock_symbol, "BUY")
+                sold = self.data_store.total_stocks_sold(username, stock_symbol, "SELL")
                 available_quantity = bought - sold
                 if quantity <= available_quantity:
                     transaction_date = datetime.now()

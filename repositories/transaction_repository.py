@@ -34,12 +34,17 @@ class TransactionRepository:
             else:
                 # If 'date' is a string, parse it
                 date = datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
-            if transaction_type == "Buy":
+            if transaction_type == "BUY":
                 result.append(BuyTransaction(user.username, stock_symbol, quantity, date, transaction_type))
             else:
                 result.append(SellTransaction(user.username, stock_symbol, quantity, date, transaction_type))
 
         return result
+
+    def delete_user_transactions(self, user):
+        query = sql.SQL("DELETE FROM transactions WHERE username = %s")
+        self.cursor.execute(query, (user.username,))
+        self.connection.commit()
 
     def total_stocks(self, username, stock_symbol, transaction_type):
         query = sql.SQL("SELECT SUM(quantity) FROM transactions WHERE username = %s AND transaction_type = %s AND "

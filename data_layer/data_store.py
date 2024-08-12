@@ -60,5 +60,8 @@ class DataStore:
     def add_sell_transaction(self, transaction):
         self.transaction_repository.create_transaction(transaction)
 
-    def get_transactions(self, username):
-        return self.transaction_repository.get_transactions_by_username(username)
+    def get_transactions(self, user):
+        return self.transaction_repository.get_transactions_by_username(user)
+
+    def delete_transactions(self, user):
+        self.transaction_repository.delete_user_transactions(user)
